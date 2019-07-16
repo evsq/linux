@@ -1,0 +1,41 @@
+# The following steps disable netplan on Ubuntu 18.04
+
+# Install ifupdown package
+apt-get update
+apt-get install ifupdown
+
+# Configure network settings in /etc/network/interfaces
+auto lo
+iface lo inet loopback
+# Replace the "IFNAME" on your network device name
+auto IFNAME
+iface IFNAME inet static
+  address 10.28.0.2
+  netmask 255.255.255.0
+  gateway 10.28.0.1
+  dns-nameservers 8.8.8.8 8.8.4.4
+
+source /etc/network/interfaces.d/*
+
+# Apply the configuration above
+ifdown IFNAME lo
+ifup -a
+systemctl enable --now networking
+
+# Disable the unwanted services
+systemctl stop systemd-networkd.socket systemd-networkd networkd-dispatcher systemd-networkd-wait-online
+systemctl disable systemd-networkd.socket systemd-networkd networkd-dispatcher systemd-networkd-wait-online
+systemctl mask systemd-networkd.socket systemd-networkd networkd-dispatcher systemd-networkd-wait-online
+
+# Remove cloud-init and netplan services
+cloud-init clean --logs
+touch /etc/cloud/cloud-init.disabled
+rm -rf /etc/netplan/50-cloud-init.yaml
+apt-get --assume-yes purge cloud-init nplan netplan.io -y
+apt autoremove -y
+
+# Also add the DNS in /etc/systemd/resolved.conf
+DNS=8.8.8.8 8.8.4.4
+
+# Restart systemd-resolved service
+systemctl restart systemd-resolved
