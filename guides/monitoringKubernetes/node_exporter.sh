@@ -5,13 +5,13 @@ curl -LO https://github.com/prometheus/node_exporter/releases/download/v0.18.1/n
 tar xvzf node_exporter-0.18.1.linux-amd64.tar.gz
 
 # Copy node_exporter bin
-cp node_exporter-0.18.1.linux-amd64/node_exporter /usr/local/bin/
+cp node_exporter-0.18.1.linux-amd64/node_exporter /usr/bin/
 
 # Create node_exporter user
 useradd -s /sbin/nologin nexporter
 
 # Create node_exporter systemd unit
-cat <<EOF > /etc/systemd/system/node_exporter.service
+cat <<EOF > /lib/systemd/system/node_exporter.service
 [Unit]
 Description=Node Exporter
 After=network.target
@@ -20,7 +20,7 @@ After=network.target
 User=nexporter
 Group=nexporter
 Type=simple
-ExecStart=/usr/local/bin/node_exporter
+ExecStart=/usr/bin/node_exporter
 
 [Install]
 WantedBy=multi-user.target
