@@ -1,0 +1,99 @@
+# Configuration on ubuntu server
+
+# Enable vmware customization in the /etc/cloud/cloud.cfg file
+disable_vmware_customization: false 
+
+#Comment out this line in the /usr/lib/tmpfiles.d/tmp.conf file:
+#/tmp 1777 root root -
+
+#Remove the /var/lib/cloud/seed/nocloud-net directory.
+
+#Remove the /etc/cloud/cloud.cfg.d/50-curtin-networking.cfg file.
+
+# Install VMware Guestinfo datasource on ubuntu where cloud-init is already present.
+curl -sSL https://raw.githubusercontent.com/vmware/cloud-init-vmware-guestinfo/master/install.sh | sh -
+
+#If required pip
+apt install python3-pip -y
+
+# https://kb.vmware.com/s/article/54986
+# https://github.com/vmware/cloud-init-vmware-guestinfo
+
+# Configuration on client machine
+
+# Install govmomi
+curl -LO https://github.com/vmware/govmomi/releases/download/v0.20.0/govc_linux_amd64.gz
+gunzip -d govc_linux_amd64.gz
+chmod 755 govc_linux_amd64.gz
+mv govc_linux_amd64.gz /usr/bin
+
+# Configure govc
+export GOVC_URL=yoursphereurl
+export GOVC_USERNAME=yourusername
+export GOVC_PASSWORD=yourpassword
+export GOVC_INSECURE=true
+
+#In example create network configuration for the VM.
+cat <<EOF > network.configuration.yaml
+version: 1
+config:
+  - type: physical
+    name: ens192
+    subnets:
+      - type: static
+        address: 192.168.1.200
+        gateway: 192.168.1.1
+        dns_nameservers:
+          - 8.8.8.8
+          - 8.8.4.4
+EOF
+
+# Create a JSON file. In the key "network.encoding" values can be either "base64" or "gzip+base64".
+cat <<EOF > metadata.json
+{
+  "network": "NETWORK_CONFIG",
+  "network.encoding": "base64",
+  "local-hostname": "node",
+  "instance-id": "node"
+}
+EOF
+
+# Create a cloud config file. Note that you must create this file. If you don't want to enter any data, just create the file with "#cloud-config" parameter.
+cat <<EOF > cloud-config.yaml
+#cloud-config
+
+users:
+  - default
+  - name: test
+    primary_group: test
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: sudo, wheel
+    ssh_import_id: None
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1y
+EOF
+
+# Find path to the VM to environment variable above
+govc vm.info nameyourvm
+
+export VM="/inventory/path/to/the/vm"
+
+
+export CLOUD_CONFIG=$(cat cloud-config.yaml | base64)
+export METADATA=$(sed "s/NETWORK_CONFIG/$(base64 -w0 network.config.yaml)/" metadata.json | base64)
+
+
+govc vm.power -off "${VM}"
+
+
+govc vm.change -vm "${VM}" -e guestinfo.metadata="${METADATA}"
+govc vm.change -vm "${VM}" -e guestinfo.metadata.encoding=base64
+govc vm.change -vm "${VM}" -e guestinfo.userdata="${CLOUD_CONFIG}"
+govc vm.change -vm "${VM}" -e guestinfo.userdata.encoding=base64
+
+
+govc vm.power -on=true $VM
+
+# https://github.com/vmware/govmomi/tree/master/govc
+
