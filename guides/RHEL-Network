@@ -1,0 +1,22 @@
+=== Network teaming ===
+
+# Install the teamd package
+yum install teamd -y
+
+# Create the team interface
+nmcli con add con-name team0 ifname team0 type team config '{"runner":{"name":"loadbalance"}}'
+
+# Configure the team interface
+nmcli con mod team0 ip4 192.168.1.2/24 gw 192.168.1.1 ipv4.dns 8.8.8.8 ipv4.method manual
+
+# Create team-slaves interfaces. In my case i'll create 2 interfaces.
+nmcli con add con-name team0-slave0 ifname eth0 type team-slave master team0
+nmcli con add con-name team0-slave1 ifname eth1 type team-slave master team0
+
+# Use the teamdctl commands to check the configuration state
+teamdctl team0 state
+teamdctl team0 config dump
+teamnl team0 ports
+
+# Restart systemd network
+systemctl restart network
