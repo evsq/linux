@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# Pre-reqs
+yum install gcc openssl-devel bzip2-devel wget yum-utils device-mapper-persistent-data lvm2 -y
+
+# Install Docker
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum install docker-ce -y
+systemctl enable docker
+
+# Create Self-Signed OpenSSL Certs
+hostnamectl set-hostname registry
+hostname=$(hostname)
+mkdir harbor_install
+mkdir -p harbor_install/openssl
+cd harbor_install/openssl
+openssl genrsa -out ca.key 4096
+openssl req -x509 -new -nodes -sha512 -days 3650 \
+  -subj "/C=RU/ST=Russia/L=Moscow/O=test/OU=test/CN=${hostname}" \
+  -key ca.key \
+  -out ca.crt
+openssl genrsa -out ${hostname}.key 4096
+openssl req -sha512 -new \
+  -subj "/C=RU/ST=Russia/L=Moscow/O=test/OU=test/CN=${hostname}" \
+  -key ${hostname}.key \
+  -out ${hostname}.csr
+
+cat > v3.ext <<-EOF
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth 
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1=${hostname}
+DNS.2=registry
+EOF
+
+openssl x509 -req -sha512 -days 3650 \
+  -extfile v3.ext \
+  -CA ca.crt -CAkey ca.key -CAcreateserial \
+  -in ${hostname}.csr \
+  -out ${hostname}.crt
+
+
+
+# Copy certs to root for Harbor Inatallation
+mkdir -p /root/cert/
+cp ${hostname}.crt /root/cert/
+cp ${hostname}.key /root/cert/
+
+openssl x509 -inform PEM -in ${hostname}.crt -out ${hostname}.cert
+
+# Copy certs to Docker to get around X509 unauthorized cert error
+mkdir -p /etc/docker/certs.d/${hostname}/
+cp ${hostname}.cert /etc/docker/certs.d/${hostname}/
+cp ${hostname}.key /etc/docker/certs.d/${hostname}/
+cp ca.crt /etc/docker/certs.d/${hostname}/
+
+cp ${hostname}.crt /etc/pki/ca-trust/source/anchors/${hostname}.crt
+update-ca-trust
+
+# Start the Docker Service
+systemctl start docker
+
+# Install Docker Compose
+curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+# Install harbor
+cd /root/harbor_install/
+wget https://storage.googleapis.com/harbor-releases/release-1.8.0/harbor-online-installer-v1.8.2.tgz
+tar xvf harbor-online-installer-v1.8.2 .tgz
+cd $(pwd)/harbor
+
+#sed -i "s|hostname: reg.mydomain.com|hostname: $hostname|g" harbor.yml
+#sed -i "s|ui_url_protocol = http|ui_url_protocol = https|g" harbor.cfg
+#sed -i "s|ssl_cert = /data/cert/server.crt|ssl_cert = /root/cert/$FQDN.crt|g" harbor.cfg
+#sed -i "s|ssl_cert_key = /data/cert/server.key|ssl_cert_key = /root/cert/$FQDN.key|g" harbor.cfg
+
+# Prepare Harbor
+#./prepare
+# Install Harbor
+#./install.sh
