@@ -1,0 +1,55 @@
+#!/bin/bash
+
+export iface="ens33"
+export iface_ip="192.168.1.100"
+
+# Clean rules
+iptables -F
+iptables -F -t nat
+iptables -F -t mangle
+iptables -X
+iptables -t nat -X
+iptables -t mangle -X
+
+# Disabled all that is not allowed
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+iptables -P FORWARD DROP
+
+# Allowed localhost and own network
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -i $iface -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
+iptables -A OUTPUT -o $iface -j ACCEPT
+
+# Allowed ping
+iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type destination-unreachable -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type time-exceeded -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+# Access to the internet
+iptables -A OUTPUT -o $iface-j ACCEPT
+
+# Allow established connections
+iptables -A INPUT -p all -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A OUTPUT -p all -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -p all -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Disabled unidentified packets
+iptables -A INPUT -m state --state INVALID -j DROP
+iptables -A FORWARD -m state --state INVALID -j DROP
+iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+
+# Protect syn-flood ddos
+iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+iptables -A OUTPUT -p tcp ! --syn -m state --state NEW -j DROP
+
+# Reject a specific ip
+#iptables -A INPUT -s 1.1.1.1 -j REJECT
+
+# Allow access to SSH
+iptables -A INPUT -i $iface -p tcp --dport 22 -j ACCEPT
+
+# Save this rules
+/sbin/iptables-save  > /etc/sysconfig/iptables
