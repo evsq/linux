@@ -1,0 +1,103 @@
+# Install Openvpn and easy-rsa for create keys and certs
+
+yum install epel-release -y
+yum install openvpn easy-rsa –y
+
+
+# Create certificates
+
+cd /etc/openvpn
+
+/usr/share/easy-rsa/3.0.3/./easyrsa init-pki
+/usr/share/easy-rsa/3.0.3/./easyrsa build-ca
+/usr/share/easy-rsa/3.0.3/./easyrsa gen-req server nopass
+/usr/share/easy-rsa/3.0.3/./easyrsa gen-req client nopass
+/usr/share/easy-rsa/3.0.3/./easyrsa sign-req server server nopass
+/usr/share/easy-rsa/3.0.3/./easyrsa sign-req client client nopass
+/usr/share/easy-rsa/3.0.3/./easyrsa gen-dh
+/usr/share/easy-rsa/3.0.3/./easyrsa gen-crl
+
+# example gen cert for client
+#/usr/share/easy-rsa/3.0.3/./easyrsa gen-req certForClient nopass
+#/usr/share/easy-rsa/3.0.3/./easyrsa sign-req client certForClient nopass
+
+# Move example server conf to main openvpn folder
+
+cat /usr/share/doc/openvpn-2.4.7/sample/sample-config-files/server.conf | egrep '^[a-z]' > /etc/openvpn/server.conf
+
+# Create folder to server certs and keys
+
+mkdir keys
+cp pki/ca.crt keys
+cp pki/dh.pem keys/
+cp pki/issued/server.crt keys/
+cp pki/private/server.key keys/
+cp pki/crl.pem keys/
+
+
+# My example server openvpn configuration
+
+vim /etc/openvpn/server.conf
+
+port 443
+proto tcp
+dev tun
+ca /etc/openvpn/keys/ca.crt
+cert /etc/openvpn/keys/server.crt
+key /etc/openvpn/keys/server.key  # This file should be kept secret
+dh /etc/openvpn/keys/dh.pem
+server 10.8.0.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+keepalive 10 120
+cipher AES-256-CBC
+persist-key
+persist-tun
+status /var/log/openvpn-status.log
+log /var/log/openvpn.log
+verb 3
+;client-config-dir /etc/openvpn/ccd
+push "redirect-gateway def1 bypass-dhcp"
+push "dhcp-option DNS 10.2.0.2"
+push "route 10.2.0.0 255.255.255.0"
+
+
+# apply nat rules to access to internet
+
+iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o ens160 -j MASQUERADE
+iptables-save
+
+# Enable and start openvpn 
+
+systemctl enable openvpn@server
+systemctl start openvpn@server
+
+
+# Create folder to users
+
+mkdir users/gnikonov
+cp pki/issued/gnikonov.crt users/gnikonov/
+cp pki/private/gnikonov.key users/gnikonov/
+cp pki/ca.crt users/gnikonov/
+
+# My example client openvpn configuration
+
+client
+dev tun
+proto tcp
+remote 123.123.123.123(enter server ip addr) 443
+persist-key
+persist-tun
+ca [inline]
+cert [inline]
+key [inline]
+remote-cert-tls server
+cipher AES-256-CBC
+verb 3
+<ca>
+</ca>
+<cert>
+</cert>
+<key>
+</key>
+
+
