@@ -3,10 +3,10 @@ Install and configure Harbor registry on CentOS 7
 # Install Docker
 
 
-**yum install gcc openssl-devel bzip2-devel wget yum-utils device-mapper-persistent-data lvm2 -y
+yum install gcc openssl-devel bzip2-devel wget yum-utils device-mapper-persistent-data lvm2 -y
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 yum install docker-ce -y
-systemctl enable --now docker**
+systemctl enable --now docker
 # Create self-signed OpenSSL certs
 **hostnamectl set-hostname registry
 hostname=$(hostname)
