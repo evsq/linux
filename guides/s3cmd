@@ -1,10 +1,9 @@
-# install and configure s3cmd
+# install  s3cmd
 
 yum install epel-release
 yum install python-setuptools
-
-wget https://github.com/s3tools/s3cmd/releases/download/v2.0.2/s3cmd-2.0.2.tar.gz
-
+curl -LO https://github.com/s3tools/s3cmd/releases/download/v2.0.2/s3cmd-2.0.2.tar.gz
+cd s3cmd-2.0.2
 python setup.py install
 
 # if errors appear
@@ -17,7 +16,7 @@ python setup.py install
 
 s3cmd --configure
 
-# s3cmd commands
+# === s3cmd commands ===
 
 # list buckets
 s3cmd ls
