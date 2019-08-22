@@ -19,21 +19,20 @@ cd harbor_install/openssl
 
 ```
 openssl genrsa -out ca.key 4096
-```
 
 openssl req -x509 -new -nodes -sha512 -days 3650 \
 -subj "/C=RU/ST=Russia/L=Moscow/O=test/OU=test/CN=${hostname}" \
 -key ca.key \
 -out ca.crt**
 
-**openssl genrsa -out ${hostname}.key 4096**
+openssl genrsa -out ${hostname}.key 4096
 
-**openssl req -sha512 -new \
+openssl req -sha512 -new \
 -subj "/C=RU/ST=Russia/L=Moscow/O=test/OU=test/CN=${hostname}" \
 -key ${hostname}.key \
--out ${hostname}.csr**
+-out ${hostname}.csr
 
-**cat > v3.ext <<-EOF
+cat > v3.ext <<-EOF
 authorityKeyIdentifier=keyid,issuer
 basicConstraints=CA:FALSE
 keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
@@ -42,13 +41,14 @@ subjectAltName = @alt_names
 [alt_names]
 DNS.1=${hostname}
 DNS.2=registry
-EOF**
+EOF
 
-**openssl x509 -req -sha512 -days 3650 \
+openssl x509 -req -sha512 -days 3650 \
 -extfile v3.ext \
 -CA ca.crt -CAkey ca.key -CAcreateserial \
 -in ${hostname}.csr \
--out ${hostname}.crt**
+-out ${hostname}.crt
+```
 
 # Copy certs to root for Harbor installation
 **mkdir -p /root/cert/
