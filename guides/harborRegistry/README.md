@@ -2,22 +2,26 @@
 Install and configure Harbor registry on CentOS 7
 # Install Docker
 
-
+```
 yum install gcc openssl-devel bzip2-devel wget yum-utils device-mapper-persistent-data lvm2 -y
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 yum install docker-ce -y
 systemctl enable --now docker
+```
 # Create self-signed OpenSSL certs
-**hostnamectl set-hostname registry
+```
+hostnamectl set-hostname registry
 hostname=$(hostname)
 mkdir harbor_install
 mkdir -p harbor_install/openssl
-cd harbor_install/openssl**
+cd harbor_install/openssl
+```
 
+```
+openssl genrsa -out ca.key 4096
+```
 
-**openssl genrsa -out ca.key 4096**
-
-**openssl req -x509 -new -nodes -sha512 -days 3650 \
+openssl req -x509 -new -nodes -sha512 -days 3650 \
 -subj "/C=RU/ST=Russia/L=Moscow/O=test/OU=test/CN=${hostname}" \
 -key ca.key \
 -out ca.crt**
