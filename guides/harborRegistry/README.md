@@ -79,10 +79,53 @@ curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compo
 chmod +x /usr/local/bin/docker-compose
 ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 ```
-# Install harbor
+# Download harbor
 ```
 cd /root/harbor_install/
 wget https://storage.googleapis.com/harbor-releases/release-1.8.0/harbor-online-installer-v1.8.2.tgz
-tar xvf harbor-online-installer-v1.8.2 .tgz
+tar xvf harbor-online-installer-v1.8.2.tgz
+rm harbor-online-installer-v1.8.2.tgz
 cd $(pwd)/harbor
+```
+# Configure harbor
+Change hostname, enable https, add path to certs and add s3 storage in harbor.yml
+
+```
+hostname: your hostname
+
+# http related config
+#http:
+  # port for http, default is 80. If https enabled, this port will redirect to https port
+#  port: 80
+
+# https related config
+https:
+#   # https port for harbor, default is 443
+  port: 5000
+#   # The path of cert and key files for nginx
+  certificate: /root/cert/yourcert.crt
+  private_key: /root/cert/yourkey.key
+storage_service:
+  s3:
+    accesskey: youraccesskey
+    secretkey: yoursecretkey
+    region: yourregion
+    bucket: yourbucket
+    regionendpoint: yourendpoint
+
+```
+# Install harbor
+Apply your configuration and install harbor
+
+```
+./prepare
+./install.sh
+```
+# Update harbor
+Stop existing services, change your configuration file, apply configuration with help ./prepare and start services
+```
+docker-compose down -v
+vim harbor.yml
+./prepare
+docker-compose up -d
 ```
