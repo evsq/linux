@@ -44,13 +44,12 @@ openssl x509 -req -sha512 -days 3650 \
   -out ${hostname}.crt
 
 
+openssl x509 -inform PEM -in ${hostname}.crt -out ${hostname}.cert
 
 # Copy certs to root for Harbor Inatallation
 mkdir -p /root/cert/
 cp ${hostname}.crt /root/cert/
 cp ${hostname}.key /root/cert/
-
-openssl x509 -inform PEM -in ${hostname}.crt -out ${hostname}.cert
 
 # Copy certs to Docker to get around X509 unauthorized cert error
 mkdir -p /etc/docker/certs.d/${hostname}/
