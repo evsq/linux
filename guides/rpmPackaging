@@ -1,0 +1,78 @@
+# rpmbuild is used to build both binary and source software packages. A package consists of an archive of files and meta-data used to install and erase the archive files. The meta-data includes helper scripts, file attributes, and descriptive information about the package. Packages # come in two varieties: binary packages, used to encapsulate software to be installed, and source packages, containing the source code and recipe necessary to produce binary packages.
+
+# Build binary and source packages (after doing the %prep, %build, and %install stages).
+rpmbuild -ba hello-world.spec
+
+# Build a binary package (after doing the %prep, %build, and %install stages).
+rpmbuild -bb hello-world.spec
+
+# The spectool utility from the rpmdevtools package can do this. Just install rpmdevtools and point spectools at the .spec like so:
+# It will download any missing sources into rpm's %{_sourcedir} (usually SOURCES) directory.
+spectool -g -R SPECS/nginx.spec
+
+
+# Prerequisites
+yum install gcc rpm-build rpm-devel rpmlint make python bash coreutils diffutils patch rpmdevtools
+
+# Create Simple RPM Package in file hello-world.spec
+Name:       hello-world
+Version:    1
+Release:    1
+Summary:    Most simple RPM package
+License:    FIXME
+
+%description
+This is my first RPM package, which does nothing.
+
+%prep
+# we have no source, so nothing here
+
+%build
+cat > hello-world.sh <<EOF
+#!/usr/bin/bash
+echo Hello world
+EOF
+
+%install
+mkdir -p %{buildroot}/usr/bin/
+install -m 755 hello-world.sh %{buildroot}/usr/bin/hello-world.sh
+
+%files
+/usr/bin/hello-world.sh
+
+%changelog
+# let's skip this for now
+
+
+# Use these commands
+rpmdev-setuptree
+rpmbuild -ba hello-world.spec
+
+# The file /$HOME/rpmbuild/RPMS/x86_64/hello-world-1-1.x86_64.rpm is rpm package
+
+
+# Type gpg name in the file ~/.rpmmacros
+%_topdir %(echo $HOME)/rpmbuild
+
+%__arch_install_post \
+    [ "%{buildarch}" = "noarch" ] || QA_CHECK_RPATHS=1 ; \
+    case "${QA_CHECK_RPATHS:-}" in [1yY]*) /usr/lib/rpm/check-rpaths ;; esac \
+    /usr/lib/rpm/check-buildroot
+
+%_gpg_name 3CDA4338
+
+# Next sign rpm file
+rpm --addsign file.rpm
+# or sign that method
+find ~/rpmbuild/RPMS -type f -name \*.rpm -mmin -5 -execdir rpm --addsign {} + 
+
+# Update repo
+# first time
+createrepo .
+# second time
+createrepo --update .
+
+# This commands create repo in /repodata with rpm files.
+# Next sign repomd.xml file in /repodata dir
+gpg -ba repomd.xml
+
