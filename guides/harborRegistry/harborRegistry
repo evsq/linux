@@ -67,10 +67,11 @@ curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compo
 chmod +x /usr/local/bin/docker-compose
 ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
-# Install harbor
+# Download harbor
 cd /root/harbor_install/
 wget https://storage.googleapis.com/harbor-releases/release-1.8.0/harbor-online-installer-v1.8.2.tgz
-tar xvf harbor-online-installer-v1.8.2 .tgz
+tar xvf harbor-online-installer-v1.8.2.tgz
+rm harbor-online-installer-v1.8.2.tgz
 cd $(pwd)/harbor
 
 # Prepare Harbor
