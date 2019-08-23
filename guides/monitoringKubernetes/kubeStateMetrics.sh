@@ -145,7 +145,7 @@ EOF
 
 # If you use ingress, create configmap and get access outside cluster.
 # Type any port through which prometheus would scrape metrics ( In my case 8080 ).
-# In value type namespace and service through which expose kube-state-metrics pod.
+# Type value in namespace and service through which expose kube-state-metrics pod.
 
 cat <<EOF > configmap-tcp-services-nginx.yaml
 apiVersion: v1
