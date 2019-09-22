@@ -1,0 +1,7 @@
+If error appers:
+error: unable to recognize "/etc/istio/crd-11/crd-11.yaml": Get https://10.96.0.1:443/api?timeout=32s: dial tcp 10.96.0.1:443: connect: no route to host
+Try it:
+iptables -P INPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables -F
