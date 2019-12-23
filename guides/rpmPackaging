@@ -76,3 +76,45 @@ createrepo --update .
 # Next sign repomd.xml file in /repodata dir
 gpg -ba repomd.xml
 
+
+# Example
+
+%define version 1.1
+
+Name:           somename
+Version:        %{version}
+Release:        0
+Summary:        Some description
+
+License:        ASL 2.0
+Source0:        somename-%{version}.tar.gz
+
+
+%description
+Some description
+
+%prep
+tar xvzf %{SOURCE0}
+
+#%build
+
+%install
+install -d %{buildroot}%{_bindir}
+install -p -m 755 -t %{buildroot}%{_bindir} \
+    somename/somename \
+    somename/somename2
+
+install -d %{buildroot}%{_sysconfdir}/sysconfig
+install -p -m 600 %{SOURCE21} %{buildroot}%{_sysconfdir}/sysconfig/someconfig
+install -p -m 600 %{SOURCE21} %{buildroot}%{_sysconfdir}/sysconfig/someconfig2
+
+install -d %{buildroot}%{_unitdir}
+install -p -m 644 -t %{buildroot}%{_unitdir} somename/somename.service somename/somename2.service
+    
+install -d %{buildroot}/somedir
+%files
+%{_bindir}/somename
+%{_bindir}/somename2
+%{_unitdir}/somename.service
+%{_unitdir}/somename2.service
+/somedir
