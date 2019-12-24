@@ -1,0 +1,8 @@
+# If your users disappear or you lost users data after reboot VM/restart systemd
+
+# Create rabbit env conf in rabbit dir and put "rabbit@youractualhostname"
+# For example
+
+cat <<EOF > /etc/rabbitmq/rabbitmq-env.conf 
+NODENAME=rabbit@rabbit
+EOF
