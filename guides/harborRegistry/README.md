@@ -22,7 +22,7 @@ openssl genrsa -out ca.key 4096
 openssl req -x509 -new -nodes -sha512 -days 3650 \
 -subj "/C=RU/ST=Russia/L=Moscow/O=test/OU=test/CN=${hostname}" \
 -key ca.key \
--out ca.crt**
+-out ca.crt
 
 openssl genrsa -out ${hostname}.key 4096
 
