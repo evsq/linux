@@ -1,0 +1,10 @@
+if you faced problem when pushed into github RPC failed; result=22, HTTP code = 413
+
+you need to add "client_max_body_size 30g" in nginx.conf:
+
+server {
+        server_name  someserver;
+
+        location / {
+          client_max_body_size 30g;
+        }
