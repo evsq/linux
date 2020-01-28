@@ -1,0 +1,4 @@
+#!/bin/bash
+
+pg_dump -U postgres -d prod > ~/backups/prod_db_$(date +%d%m%Y_%H_%M).sql
+s3cmd put ~/backups/prod_db_$(date +%d%m%Y_%H_%M).sql s3://prod-database-backup
