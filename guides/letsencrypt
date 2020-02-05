@@ -1,0 +1,5 @@
+# Create certs
+certbot certonly -d somedomain
+
+# Cronjob for renew certs
+0 */12 * * * /bin/certbot renew
