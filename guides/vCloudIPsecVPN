@@ -1,0 +1,44 @@
+# Navigate to configuration settings your edge. You need to configure that procedure on both ORGs/VDCs you have
+Edge Gateway -> Configure Services
+
+# Navigate to VPN 
+VPN -> IPsec VPN
+
+# Configure status
+Activation Status
+IPsec VPN Service Status - Turn ON
+
+# Configure IPsec
+IPsec VPN Sites
+
+# Add new IPsec VPN
+Enabled - ON
+Enable perfect forward secrecy (PFS) - ON
+Name - Optional
+Local Id - type your PUBLIC ip addr # For example 123.456.123.456
+Local Endpoint - type your PUBLIC ip addr # For example 123.456.123.456
+Local Subnets - type your PRIVATE CIDR # For example 10.0.0.0/24
+Peer ID - type second ORG/VDC  PUBLIC ip addr # For example 123.456.123.456
+Peer Endpoint - type second ORG/VDC  PUBLIC ip addr # For example 341.212.768.123
+Peer Subnets - type second ORG/VDC PRIVATE CIDR # For example 10.1.0.0/24
+Encryption Algorithm - AES256
+Authentication - PSK
+Change Shared Key - OFF
+Pre-Shared Key - type symbols and key for authentication between your orgs. The key must match on both sides # For example ADzcxkl123
+Diffie-Hellman Group - DH14
+Digest Algorithm - SHA-256
+IKE Option - IKEv2
+IKE Responder Only - OFF
+Session Type - Policy Based Session
+
+# Navigate to Firewall
+
+# Add new rule
+
+# For example
+Source IPs must have both directions
+10.0.0.0/24
+10.1.0.0/24
+Destination IPs must have both directions
+10.0.0.0/24
+10.1.0.0/24
