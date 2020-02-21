@@ -1,4 +1,4 @@
-if you faced problem when pushed into github RPC failed; result=22, HTTP code = 413
+if you faced problem when pushed into github/gitlab RPC failed; result=22, HTTP code = 413
 
 you need to add "client_max_body_size 30g" in nginx.conf:
 
@@ -7,4 +7,14 @@ server {
 
         location / {
           client_max_body_size 30g;
+        }
+
+if you've gitlab and behind nginx for proxy, and your images not displayed, then you need add proxy_set_header
+    server {
+        server_name  someserver;
+
+        location / {
+
+          proxy_set_header Host $http_host;
+          proxy_pass http://somserver/;
         }
