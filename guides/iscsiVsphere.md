@@ -1,6 +1,5 @@
 # Vsphere
-Choose Host -> Configure -> Storage Adapters
-Add Software Adapter -> Add software iSCSI adapter # After added adapter you'll get Identifier name, in my case "iqn.1998-01.com.vmware:esxi2-58e70795"
+Choose Host -> Configure -> Storage Adapters -> Add Software Adapter -> Add software iSCSI adapter # After added adapter you'll get Identifier name, in my case "iqn.1998-01.com.vmware:esxi2-58e70795"
 
 # iSCSI
 Install and start iSCSI
