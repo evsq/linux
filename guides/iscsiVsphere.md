@@ -1,33 +1,48 @@
-# Linux
-# Install targetcli (iSCSI)
+# Vsphere
+Choose Host -> Configure -> Storage Adapters
+Add Software Adapter -> Add software iSCSI adapter # After added adapter you'll get Identifier name, in my case "iqn.1998-01.com.vmware:esxi2-58e70795"
+
+# iSCSI
+Install and start iSCSI
+```
 yum install targetcli
+```
+```
+systemctl enable --now target
+```
 
-systemctl enable target
-systemctl start target
-
-# Enter in targetcli
-target
-
-# create block storage
+Enter to CLI
+```
+targetcli
+```
+Create blockstorage
+```
 /backstores/block create storage01 /dev/sdb
+```
 
-#or LVM
-/backstores/block create storage02 /dev/vg01/lv01 
+Create iSCSI target
+```
+/iscsi create iqn.2020-02.com.iscsi:t1
+```
 
-# create iscsi target
-/iscsi create
+Go to target directory
+```
+cd /iscsi/iqn.20...iscsi:t1/tpg1
+```
 
-# move iscsi > iqn > tpg1
-/iscsi/iqn.20...66d07483/tpg1
+Create initiator. Type identifier name from Vsphere
+```
+acls/ create iqn.1998-01.com.vmware:esxi2-58e70795 
+```
+Create LUN on block Storage
+```
+luns/ create /backstores/block/storage01
+```
+# Vsphere
+Choose Host -> Configure -> Storage Adapters
+Choose iSCSI Software Adapter -> below choose Dynamic Discovery
+Add (Target Server) # Type iSCSI ip address
+Click Rescan Adapter
 
-# create initiator. in my case vsphere host
-acls/ create iqn.1998-01.com.vmware:esx11d3-50b4f370
-
-# create luns on block storage
-luns/ create /backstores/block/dev 
-
-# vSphere
-
-Choose "Host" > Configure > Storage Adapters > Add Software Adapter > Add software iSCSI adapter
-If iSCSI Adapter not appear click Rescan Adapter and Rescan Storage
-After add new iSCSI Software Adapter below choose Dynamic Discovery and type IP address and port iSCSI server
+Create new VMFS volume
+Choose Host -> Storage -> New Datastore -> VMFS -> Click new storage -> VMFS 6 -> Datastore size (ALL)
