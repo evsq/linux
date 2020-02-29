@@ -68,8 +68,7 @@ iptables-save
 
 # Enable and start openvpn 
 
-systemctl enable openvpn@server
-systemctl start openvpn@server
+systemctl enable --now openvpn@server
 
 
 # Create folder to users
