@@ -23,7 +23,7 @@ cd /etc/openvpn
 
 # Move example server conf to main openvpn folder
 
-cat /usr/share/doc/openvpn-2.4.6/sample/sample-config-files/server.conf | egrep '^[a-z]' > /etc/openvpn/server.conf
+cat /usr/share/doc/openvpn-2.4.8/sample/sample-config-files/server.conf | egrep '^[a-z]' > /etc/openvpn/server.conf
 
 # Create folder to server certs and keys
 
