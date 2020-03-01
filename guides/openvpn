@@ -8,22 +8,22 @@ yum install openvpn easy-rsa –y
 
 cd /etc/openvpn
 
-/usr/share/easy-rsa/3.0.3/./easyrsa init-pki
-/usr/share/easy-rsa/3.0.3/./easyrsa build-ca
-/usr/share/easy-rsa/3.0.3/./easyrsa gen-req server nopass
-/usr/share/easy-rsa/3.0.3/./easyrsa gen-req client nopass
-/usr/share/easy-rsa/3.0.3/./easyrsa sign-req server server nopass
-/usr/share/easy-rsa/3.0.3/./easyrsa sign-req client client nopass
-/usr/share/easy-rsa/3.0.3/./easyrsa gen-dh
-/usr/share/easy-rsa/3.0.3/./easyrsa gen-crl
+/usr/share/easy-rsa/3.0.6/./easyrsa init-pki
+/usr/share/easy-rsa/3.0.6/./easyrsa build-ca
+/usr/share/easy-rsa/3.0.6/./easyrsa gen-req server nopass
+/usr/share/easy-rsa/3.0.6/./easyrsa gen-req client nopass
+/usr/share/easy-rsa/3.0.6/./easyrsa sign-req server server nopass
+/usr/share/easy-rsa/3.0.6/./easyrsa sign-req client client nopass
+/usr/share/easy-rsa/3.0.6/./easyrsa gen-dh
+/usr/share/easy-rsa/3.0.6/./easyrsa gen-crl
 
 # example gen cert for client
-#/usr/share/easy-rsa/3.0.3/./easyrsa gen-req certForClient nopass
-#/usr/share/easy-rsa/3.0.3/./easyrsa sign-req client certForClient nopass
+#/usr/share/easy-rsa/3.0.6/./easyrsa gen-req certForClient nopass
+#/usr/share/easy-rsa/3.0.6/./easyrsa sign-req client certForClient nopass
 
 # Move example server conf to main openvpn folder
 
-cat /usr/share/doc/openvpn-2.4.7/sample/sample-config-files/server.conf | egrep '^[a-z]' > /etc/openvpn/server.conf
+cat /usr/share/doc/openvpn-2.4.6/sample/sample-config-files/server.conf | egrep '^[a-z]' > /etc/openvpn/server.conf
 
 # Create folder to server certs and keys
 
