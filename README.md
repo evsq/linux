@@ -1,2 +1,0 @@
-# Linux
-scripts,guides,etc
