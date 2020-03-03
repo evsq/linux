@@ -1,0 +1,60 @@
+Get Slack Webhook URL
+
+https://yourWorkspace.slack.com/apps/manage/custom-integrations
+
+Choose Incoming WebHooks -> Add to Slack -> Choose a channel -> Add Incoming WebHooks integration -> Edit your created configuration and get Webhook URL
+
+
+Grafana alerts
+
+Create new channel in Alerting
+Alerting -> Notification channels -> New channel
+
+New Notification Channel: 
+Name slack, 
+Type Slack, 
+Include image - ON, 
+Send reminders - ON 
+Send reminder every 5m
+
+Slack settings :
+Url - enter your slack webhook url,
+Username Alert
+
+Create Dashboard and configure Alerts
+
+Create dashboard -> Add Panel -> Add Query -> Click your query and choose Edit
+
+Queries:
+
+Memory query
+100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes)
+
+System CPU time query
+sum by (instance)(irate(node_cpu_seconds_total{mode="system"}[5m])) * 100
+
+User CPU time query
+sum by (instance)(irate(node_cpu_seconds_total{mode="user"}[5m])) * 100
+
+Available Disk /var/log query
+100 - ((node_filesystem_avail_bytes{mountpoint="/var/log",fstype!="rootfs"} * 100) / node_filesystem_size_bytes{mountpoint="/var/log",fstype!="rootfs"})
+
+Available Disk root "/" query
+100 - ((node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"} * 100) / node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"})
+
+Alert
+
+Rule
+For example Evaluate every 1m For 2m
+
+Conditions
+WHEN avg() OF query(A,5m,now) IS ABOVE 80
+
+No Data & Error Handling
+If no data or all values are null SET STATE TO Alerting
+If execution error or timeout SET STATE TO Alerting
+
+Notification
+Send to -> Add your created channel, for example: slack
+Message -> for example: Memory pressure above 80%
+
