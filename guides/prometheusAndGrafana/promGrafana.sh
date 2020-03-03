@@ -1,21 +1,20 @@
 #!/bin/bash
 
 # Download and extract prometheus files
-curl -L https://github.com/prometheus/prometheus/releases/download/v2.10.0/prometheus-2.10.0.linux-amd64.tar.gz > prom.tar.gz
+curl -L https://github.com/prometheus/prometheus/releases/download/v2.16.0/prometheus-2.16.0.linux-amd64.tar.gz > prom.tar.gz
 tar xvfz prom.tar.gz
-mv prometheus-2.10.0.linux-amd64/ prometheus
 
-# Create user and change permission on folder
-useradd -s /sbin/nologin prometheus
-chown -R prometheus:prometheus prometheus
+# Create user
+useradd --no-create-home -s /sbin/nologin prometheus
 
-# Create directories and change permissions on folders
+# Create directories and change permissions
 mkdir /etc/prometheus
 mkdir /var/lib/prometheus
 chown -R prometheus:prometheus /etc/prometheus /var/lib/prometheus
 
-# Copy binaries and files
-cd prometheus
+# Copy binaries and files and change permissions
+chown -R prometheus:prometheus prometheus-2.16.0.linux-amd64
+cd prometheus-2.16.0.linux-amd64
 cp prometheus promtool /usr/local/bin
 cp -r consoles/ console_libraries/ /etc/prometheus/
 
@@ -56,7 +55,7 @@ scrape_configs:
 EOF
 
 # Create prometheus systemd unit
-cat <<EOF > /etc/systemd/system/prometheus.service
+cat <<EOF > /usr/lib/systemd/system/prometheus.service
 [Unit]
 Description=Prometheus
 Wants=network-online.target
