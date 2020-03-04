@@ -1,0 +1,84 @@
+#!/bin/bash
+
+# Download and extract alertmanager files
+
+curl -L https://github.com/prometheus/alertmanager/releases/download/v0.20.0/alertmanager-0.20.0.linux-amd64.tar.gz > alertmanager.tar.gz
+tar xvzf alertmanager.tar.gz
+
+
+# Create user
+useradd --no-create-home -s /sbin/nologin alertmanager
+
+# Change permissions and copy binaries
+chown -R alertmanager:alertmanager alertmanager-0.20.0.linux-amd64
+cd alertmanager-0.20.0.linux-amd64
+chown alertmanager:alertmanager amtool alertmanager 
+cp amtool alertmanager /usr/local/bin
+
+
+# Create directory, copy alertmanager.yml and change permissions
+mkdir /etc/alertmanager
+mkdir /var/lib/alertmanager
+cp alertmanager.yml /etc/alertmanager
+chown -R alertmanager:alertmanager /etc/alertmanager /var/lib/alertmanager
+
+# Create systemd unit
+cat <<EOF > /usr/lib/systemd/system/alertmanager.service
+[Unit]
+Description=Alertmanager
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=alertmanager
+Group=alertmanager
+ExecStart=/usr/local/bin/alertmanager \
+  --config.file=/etc/alertmanager/alertmanager.yml \
+  --storage.path=/var/lib/alertmanager
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Add alerting config in prometheus.yml
+cat <<EOF >> /etc/prometheus/prometheus.yml
+rule_files:
+  - '/etc/prometheus/alerts/*.yml'
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - localhost:9093
+EOF
+
+# Add example alert rule
+cat <<EOF > /etc/prometheus/alerts/hosts.yml
+groups:
+
+- name: AllInstances
+  rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 1m
+    annotations:
+      title: 'Instance {{ $labels.instance }} down'
+      description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute.'
+    labels:
+      severity: 'critical'
+EOF
+
+# Restart prometheus
+systemctl restart prometheus
+
+# Optional: Add grafana plugin to use alertmanager dashboard 
+grafana-cli plugins install camptocamp-prometheus-alertmanager-datasource
+systemctl restart grafana-server
+# After installed plugin, access to grafana and add new datasource Prometheus AlertManager
+# Enter in URL field http://localhost:9093 - it's addr your alertmanager.
+# Import dashboard and choose alertmanager datasource
+id 8010
+
