@@ -43,6 +43,50 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 
+# Create alertmanager config file
+cat <<EOF > /etc/alertmanager/alertmanager.yml
+global:
+  resolve_timeout: 1m
+  slack_api_url: 'https://hooks.slack.com/services/yourwebhook url'
+
+route:
+  group_by: ['instance', 'alert']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 5m
+  receiver: 'slack'
+
+receivers:
+- name: 'slack'
+  slack_configs:
+    - send_resolved: true
+      channel: 'alerts'
+      username: 'AlertManager'
+      icon_url: https://avatars3.githubusercontent.com/u/3380462
+      title: |-
+          [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }} for {{ .CommonLabels.job }}
+          {{- if gt (len .CommonLabels) (len .GroupLabels) -}}
+          {{" "}}(
+          {{- with .CommonLabels.Remove .GroupLabels.Names }}
+              {{- range $index, $label := .SortedPairs -}}
+              {{ if $index }}, {{ end }}
+              {{- $label.Name }}="{{ $label.Value -}}"
+              {{- end }}
+          {{- end -}}
+          )
+          {{- end }}
+      text: >-
+          {{ range .Alerts -}}
+          *Alert:* {{ .Annotations.title }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}
+
+          *Description:* {{ .Annotations.description }}
+
+          *Details:*
+          {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+          {{ end }}
+          {{ end }}
+EOF
+
 # Add alerting config in prometheus.yml
 cat <<EOF >> /etc/prometheus/prometheus.yml
 rule_files:
@@ -64,11 +108,65 @@ groups:
   - alert: InstanceDown
     expr: up == 0
     for: 1m
-    annotations:
-      title: 'Instance {{ $labels.instance }} down'
-      description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute.'
     labels:
-      severity: 'critical'
+      severity: critical
+    annotations:
+      title: "Instance Down {{ $labels.job }} ({{ $labels.instance }})"
+      description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute"
+
+- name: HighLoad
+  rules:
+  - alert: HighCpuLoad
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      title: "High CPU load Instance {{ $labels.job }} ({{ $labels.instance }})"
+      description: "CPU load is > 80%\n  VALUE = {{ $value }}\n {{ $labels.instance }} of job {{ $labels.job }}"
+  - alert: OutOfMemory
+    expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 20
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      title: "Out of memory Instance {{ $labels.job }} ({{ $labels.instance }})"
+      description: "Node memory is filling up (< 10% left)\n  VALUE = {{ $value }}\n  {{ $labels.instance }} of job {{ $labels.job }}"
+
+- name: Disk
+  rules:
+  - alert: OutOfDiskRootSpace
+    expr: ((node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"} * 100) / node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"}) < 20
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Out of disk root / space (instance {{ $labels.instance }})"
+      description: "Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\n  {{ $labels.instance }} of job {{ $labels.job }}"
+  - alert: OutOfDiskVarLogSpace
+    expr: ((node_filesystem_avail_bytes{mountpoint="/var/log",fstype!="rootfs"} * 100) / node_filesystem_size_bytes{mountpoint="/var/log",fstype!="rootfs"}) < 20
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Out of disk /var/log space (instance {{ $labels.instance }})"
+      description: "Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\n  {{ $labels.instance }} of job {{ $labels.job }}"
+  - alert: UnusualDiskReadLatency
+    expr: rate(node_disk_read_time_seconds_total[1m]) / rate(node_disk_reads_completed_total[1m]) > 100
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Unusual disk read latency (instance {{ $labels.instance }})"
+      description: "Disk latency is growing (read operations > 100ms)\n  VALUE = {{ $value }}\n  {{ $labels.instance }} of job {{ $labels.job }}"
+  - alert: UnusualDiskWriteLatency
+    expr: rate(node_disk_write_time_seconds_total[1m]) / rate(node_disk_writes_completed_total[1m]) > 100
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Unusual disk write latency (instance {{ $labels.instance }})"
+      description: "Disk latency is growing (write operations > 100ms)\n  VALUE = {{ $value }}\n  {{ $labels.instance }} of job {{ $labels.job }}"
 EOF
 
 # Restart prometheus
