@@ -18,7 +18,7 @@ Name - Optional
 Local Id - type your PUBLIC ip addr # For example 123.456.123.456
 Local Endpoint - type your PUBLIC ip addr # For example 123.456.123.456
 Local Subnets - type your PRIVATE CIDR # For example 10.0.0.0/24
-Peer ID - type second ORG/VDC  PUBLIC ip addr # For example 123.456.123.456
+Peer ID - type second ORG/VDC  PUBLIC ip addr # For example 341.212.768.123
 Peer Endpoint - type second ORG/VDC  PUBLIC ip addr # For example 341.212.768.123
 Peer Subnets - type second ORG/VDC PRIVATE CIDR # For example 10.1.0.0/24
 Encryption Algorithm - AES256
