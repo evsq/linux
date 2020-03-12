@@ -9,34 +9,34 @@ curl -k -u $NSXT_USER:$NSXT_PASSWORD $NSXT_URL/services
 
 # Create ipsec vpn service
 # You need to get logical router id for which you'd like create ipsec
-# From response you need to get and save id for subsequent requests in key "ipsec_vpn_service_id" #For example "id" : "823df8de-58a2-4ede-bf0f-34cd6ac43648"
+# From response you need to get and save "id" for subsequent requests in key "ipsec_vpn_service_id" #For example "id" : "823df8de-58a2-4ede-bf0f-34cd6ac43648"
 curl -X POST -H "Content-Type: application/json" -k -u $NSXT_USER:$NSXT_PASSWORD -d '{"display_name": "Test IPSec VPN service", "logical_router_id": "15bf370e-235e-4605-8030-07606575c33c"}' $NSXT_URL/services
 
 # Create DPD profile
-# From response you'll need to get and save id for subsequent requests in key "dpd_profile_id" #For example "id" : "350bb25b-579c-433a-a8c1-78753097123c"
+# From response you'll need to get and save "id" for subsequent requests in key "dpd_profile_id" #For example "id" : "350bb25b-579c-433a-a8c1-78753097123c"
 curl -X POST -H "Content-Type: application/json" -k -u $NSXT_USER:$NSXT_PASSWORD -d '{"enabled":"true", "dpd_probe_interval": 60, "description": "Test DPD profile", "display_name": "Test DPD profile"}' $NSXT_URL/dpd-profiles
 
 # Create ike profile
 # Configuration data you send must match with vCloud configuration data 
-# From response you need to get and save id for subsequent requests in key "ike_profile_id" #For example "id" : "7a76116b-66f0-4aeb-a8c8-dcf550ce1927"
+# From response you need to get and save "id" for subsequent requests in key "ike_profile_id" #For example "id" : "7a76116b-66f0-4aeb-a8c8-dcf550ce1927"
 curl -X POST -H "Content-Type: application/json" -k -u $NSXT_USER:$NSXT_PASSWORD -d '{"digest_algorithms": ["SHA2_256"],"description": "Test IKEProfile","display_name": "Test IKEProfile NSX-T API","encryption_algorithms": ["AES_256"],"ike_version": "IKE_V2","dh_groups": ["GROUP14"],"sa_life_time": 28800}' $NSXT_URL/ike-profiles
 
 # Create tunnel profile #bold-brook (my router's name)
-# From response you need to get and save id for subsequent requests in key "ipsec_tunnel_profile_id" #For example "id" : "5459929c-aad9-4b26-834c-3d58137a3cd4"
+# From response you need to get and save "id" for subsequent requests in key "ipsec_tunnel_profile_id" #For example "id" : "5459929c-aad9-4b26-834c-3d58137a3cd4"
 curl -X POST -H "Content-Type: application/json" -k -u $NSXT_USER:$NSXT_PASSWORD -d '{"digest_algorithms": ["SHA1","SHA2_256"],"description": "Tunnel Profile for router bold-brook","display_name": "Tunnel Profile for bold-brook","encapsulation_mode": "TUNNEL_MODE","encryption_algorithms": ["AES_128","AES_256"],"enable_perfect_forward_secrecy": true, "dh_groups": ["GROUP14"],"transform_protocol": "ESP","sa_life_time": 3600,"df_policy": "CLEAR"}' $NSXT_URL/tunnel-profiles
 
 # Create peer endpoint
-# Type all id's which you save from above profiles. PSK key must match with key from vCloud. Type public ip addr from vCloud in "peer addr" and "peer id" 
-# From response you need to get and save id for subsequent requests in key "peer_endpoint_id" #For example "id" : "358891f0-b210-4909-8d5e-e728b102d253"
+# Type all id's except ipsec vpn which you save from above profiles. PSK key must match with key from vCloud. Type public ip addr from vCloud in "peer addr" and "peer id" 
+# From response you need to get and save "id" for subsequent requests in key "peer_endpoint_id" #For example "id" : "358891f0-b210-4909-8d5e-e728b102d253"
 curl -X POST -H "Content-Type: application/json" -k -u $NSXT_USER:$NSXT_PASSWORD -d '{"display_name": "Peer endpoint for router bold-brook", "connection_initiation_mode": "INITIATOR", "authentication_mode": "PSK", "ipsec_tunnel_profile_id": "5459929c-aad9-4b26-834c-3d58137a3cd4", "dpd_profile_id": "350bb25b-579c-433a-a8c1-78753097123c", "psk": "j3b3HXsK94zWkQ", "ike_profile_id": "7a76116b-66f0-4aeb-a8c8-dcf550ce1927", "peer_address": "176.1.2.3", "peer_id": "176.1.2.3"}' $NSXT_URL/peer-endpoints
 
 # Create local endpoint
-# Type public ip addr from NSXT in "local addr" and "local id"
-# From response you need to get and save id for subsequent requests in key "local_endpoint_id" #For example "id" : "07e4743f-ea63-4146-bee1-d562827b450f"
+# Type public ip addr from NSXT in "local addr", "local id", ipsec vpn id
+# From response you need to get and save "id" for subsequent requests in key "local_endpoint_id" #For example "id" : "07e4743f-ea63-4146-bee1-d562827b450f"
 curl -X POST -H "Content-Type: application/json" -k -u $NSXT_USER:$NSXT_PASSWORD -d '{"local_address": "89.1.2.3","local_id": "89.1.2.3", "display_name": "Local endpoint bold-brook","ipsec_vpn_service_id": {"target_id" : "823df8de-58a2-4ede-bf0f-34cd6ac43648"}}' $NSXT_URL/local-endpoints
 
 # Create PolicyBasedIPSecVPNSession
-# Type in policy_rules: source ip cidr - from NSXT, and destination ip cidr - from vCloud
+# Type in policy_rules: source ip cidr - from NSXT, and destination ip cidr - from vCloud, ipsec vpn id, peer endpoint id, local endpoint
 curl -X POST -H "Content-Type: application/json" -k -u $NSXT_USER:$NSXT_PASSWORD -d '{ "resource_type": "PolicyBasedIPSecVPNSession","display_name": "Test PolicySession NSX-T - TestOrg","ipsec_vpn_service_id": "823df8de-58a2-4ede-bf0f-34cd6ac43648","peer_endpoint_id": "358891f0-b210-4909-8d5e-e728b102d253","local_endpoint_id": "07e4743f-ea63-4146-bee1-d562827b450f","enabled": true,"policy_rules": [{"sources": [{"subnet": "10.28.0.0/24"}],"logged": true,"destinations": [{"subnet": "10.30.0.0/24"}],"action": "PROTECT","enabled": true} ]}' $NSXT_URL/sessions
 
 
