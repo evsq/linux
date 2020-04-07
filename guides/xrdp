@@ -1,0 +1,13 @@
+server
+
+yum install epel-release -y
+yum install xrdp xorgxrdp -y
+systemctl enable --now xrdp
+
+yum groupinstall "GNOME DESKTOP" -y
+systemctl set-default graphical.target
+
+
+client 
+
+yum install remmina "remmina-plugins-*"
