@@ -58,3 +58,5 @@ EOF
     }
 
 du -d1 -h /var/log | sort -h
+
+ip addr show enp2s0f0 | grep -Po 'inet \K[\d.]+'
