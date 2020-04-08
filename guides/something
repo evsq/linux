@@ -40,3 +40,20 @@ cat <<EOF > /etc/logrotate.d/messages
        endscript
 }
 EOF
+
+
+
+    server {
+        listen       80;
+        server_name  example.com;
+
+        location / {
+          proxy_pass http://test.example.com/;
+        }
+
+        location /db {
+          rewrite ^/db/(.*)$ /$1 break;
+          proxy_pass http://db.test.example.com;
+        }
+    }
+
