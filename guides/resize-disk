@@ -1,0 +1,37 @@
+cat <<EOF > /usr/lib/systemd/system/resize-disk.service
+[Unit]
+Description=Resize disk
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/resize-disk.sh
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat <<EOF > /usr/bin/resize-disk.sh
+#!/bin/bash
+
+fdisk /dev/sda <<EOF
+d
+2
+n
+p
+2
+
+
+
+t
+2
+8e
+w
+EOF
+
+partprobe /dev/sda
+
+pvresize /dev/sda2
+
+lvextend -r -l +80%FREE /dev/centos/containers
+lvextend -r -l +20%FREE /dev/centos/var_log
+EOF
