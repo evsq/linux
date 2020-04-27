@@ -1,0 +1,17 @@
+#!/bin/sh
+
+IF=$1
+STATUS=$2
+MY_METRIC=1
+
+if [ "$IF" = "ens192" ]
+then
+        case "$STATUS" in
+                up) 
+                ip route del default dev $IF
+                ip route add default via $DHCP4_ROUTERS dev $IF metric $MY_METRIC
+                ;;
+                *)
+                ;;
+        esac
+fi
