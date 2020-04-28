@@ -21,4 +21,4 @@ EOF
 
 
 # static DNS without dhcp
-you'll need to add "PEERDNS=no" in /etc/sysconfig/network-scripts/ifcfg-ens192 file
+you'll need to add "PEERDNS=no" and for example "DNS1=8.8.8.8" in /etc/sysconfig/network-scripts/ifcfg-ens192 file
