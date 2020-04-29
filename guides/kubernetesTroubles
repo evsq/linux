@@ -5,3 +5,16 @@ iptables -P INPUT ACCEPT
 iptables -P FORWARD ACCEPT
 iptables -P OUTPUT ACCEPT
 iptables -F
+
+
+# another error
+if you can't pull through private registry
+
+FATA[0000] pulling image failed: rpc error: code = Unknown desc = Error reading manifest d249f8b in registry.something.com errors:
+denied: requested access to the resource is denied
+unauthorized: authentication required
+
+Add in deployment/something in containers spec field:
+
+      imagePullSecrets:
+      - name: registry
