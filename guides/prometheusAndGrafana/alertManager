@@ -150,7 +150,7 @@ groups:
       severity: warning
     annotations:
       summary: "Out of disk /var/log space (instance {{ $labels.instance }})"
-      description: "Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\n  {{ $labels.instance }} of job {{ $labels.job }}"
+      description: "Disk is almost full (< 20% left)\n  VALUE = {{ $value }}\n  {{ $labels.instance }} of job {{ $labels.job }}"
   - alert: UnusualDiskReadLatency
     expr: rate(node_disk_read_time_seconds_total[1m]) / rate(node_disk_reads_completed_total[1m]) > 100
     for: 5m
