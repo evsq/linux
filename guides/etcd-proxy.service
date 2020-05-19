@@ -1,0 +1,12 @@
+cat <<EOF > /usr/lib/systemd/system/etcd-proxy.service
+[Unit]
+Description=Etcd grpc proxy
+After=etcd.service
+
+[Service]
+Type=notify
+ExecStart=/bin/etcd grpc-proxy start --endpoints=https://$(ifdata -pa ens192):2379 --listen-addr=$(ifdata -pa ens224):2379 --cert /etc/ssl/etcd/etcd.crt --key /etc/ssl/etcd/etcd.key --cacert=/etc/ssl/etcd/etcd-ca.crt
+
+[Install]
+WantedBy=multi-user.target
+EOF
