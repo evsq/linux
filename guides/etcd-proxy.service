@@ -1,3 +1,5 @@
+# yum install moreutils -y # for ifdata command
+
 cat <<EOF > /usr/lib/systemd/system/etcd-proxy.service
 [Unit]
 Description=Etcd grpc proxy
