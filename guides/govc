@@ -1,0 +1,33 @@
+curl -L https://github.com/vmware/govmomi/releases/download/v0.22.1/govc_linux_amd64.gz -o /tmp/govc.gz
+gzip -d /tmp/govc.gz
+chmod u+x /tmp/govc
+mv /tmp/govc /usr/local/bin/govc
+
+export GOVC_URL="https://url"
+export GOVC_USERNAME="user"
+export GOVC_PASSWORD="pass"
+export GOVC_INSECURE=true
+export MASTER14_VM="$vm-name"
+export VSPHERE_DATASTORE="/$vcenter-name/datastore/$datastore-name"
+export VSPHERE_HOST1="$host-url"
+
+
+govc vm.network.add -vm $MASTER14_VM -net "net-name" -net.adapter "vmxnet3"
+
+govc datastore.info
+
+govc device.ls -vm $MASTER14_VM 
+
+govc device.remove -vm $MASTER14_VM ethernet-0
+
+govc vm.power -on $MASTER14_VM
+
+govc vm.power -off $MASTER14_VM
+
+govc vm.clone -vm $MASTER14_VM -datastore $VSPHERE_DATASTORE test
+
+govc vm.markastemplate test
+
+govc vm.markasvm -host=$VSPHERE_HOST1 test
+
+govc vm.destroy test
