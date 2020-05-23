@@ -2,6 +2,7 @@
 
 if journalctl -eu someservice | grep -q "panic"; then
   curl -X POST -H 'Content-type: application/json' -d '{"text":"Service is in a Panic!"}' https://hooks.slack.com/services/webhook
+else
   echo "Service is OK!"
 fi
 
