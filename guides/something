@@ -89,3 +89,7 @@ find /opt/lampp/htdocs -type d -exec chmod 755 {} \;
 
 # strace systemd unit
 #ExecStart=/usr/bin/strace -f -tt -o /tmp/strace.log -D /usr/local/bin/somebin
+
+# replace last ip octet
+client=$(ifdata -pa ens192)
+sed -i "s/IP/$(echo "${client%.*}").254/" /etc/sysconfig/something
