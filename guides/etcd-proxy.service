@@ -1,13 +1,44 @@
 # yum install moreutils -y # for ifdata command
+# instead "ifdata" command you can use - ip addr show enp2s0f0 | grep -Po 'inet \K[\d.]+'
 
 cat <<EOF > /usr/lib/systemd/system/etcd-proxy.service
 [Unit]
 Description=Etcd grpc proxy
-After=etcd.service
+Requires=etcd.service
 
 [Service]
 Type=notify
 ExecStart=/bin/etcd grpc-proxy start --endpoints=https://$(ifdata -pa ens192):2379 --listen-addr=$(ifdata -pa ens224):2379 --cert /etc/ssl/etcd/etcd.crt --key /etc/ssl/etcd/etcd.key --cacert=/etc/ssl/etcd/etcd-ca.crt
+Restart=always
+RestartSec=300
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# if when you turn on system, the ip from command "ifdata" doesn't have time to record in systemd unit, then consider workaround below
+# Add replacement words in /usr/lib/systemd/system/etcd-proxy.service in section ExecStart=/bin/etcd grpc-proxy start --endpoints=https://CLIENT:2379 --listen-addr=SERVICE:2379 --cert /etc/ssl/etcd/etcd.crt --key /etc/ssl/etcd/etcd.key --cacert=/etc/ssl/etcd/etcd-ca.crt
+
+cat <<EOF > /usr/bin/etcd-proxy-helper.sh
+#!/bin/bash
+
+sleep 300
+
+sed -i "s/CLIENT/$(ifdata -pa ens192)/" /usr/lib/systemd/system/etcd-proxy.service 
+sed -i "s/SERVICE/$(ifdata -pa ens224)/" /usr/lib/systemd/system/etcd-proxy.service 
+
+systemctl daemon-reload
+EOF
+
+chmod 755 /usr/bin/etcd-proxy-helper.sh
+
+cat <<EOF > /usr/lib/systemd/system/etcd-proxy-helper.service
+[Unit]
+Description=Etcd-proxy helper
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/etcd-proxy-helper.sh
 
 [Install]
 WantedBy=multi-user.target
