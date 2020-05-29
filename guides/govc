@@ -24,7 +24,7 @@ govc vm.power -on $MASTER14_VM
 
 govc vm.power -off $MASTER14_VM
 
-govc vm.clone -vm $MASTER14_VM -datastore $VSPHERE_DATASTORE test
+govc vm.clone -vm $MASTER14_VM -ds $VSPHERE_DATASTORE -template=true test
 
 govc vm.markastemplate test
 
