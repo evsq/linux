@@ -1,0 +1,16 @@
+if when VM startup and grub starts in command line instead normal boot
+
+initialize kernel
+
+# find partition with fs
+grub>ls
+
+# set your partition as root
+grub> set root=(hd0,msdos2)
+
+# enter your kernel
+grub> linux /vmlinuz-...
+# enter initramfs
+grub> initrd /initramfs...
+# boot
+grub> boot
