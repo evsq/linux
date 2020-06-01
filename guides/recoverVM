@@ -1,3 +1,5 @@
+# https://www.linux.com/training-tutorials/how-rescue-non-booting-grub-2-linux/
+
 if when VM startup and grub starts in command line instead normal boot
 
 initialize kernel
