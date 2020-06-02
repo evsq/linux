@@ -1,0 +1,47 @@
+# centos 7 if you faced problem with dhclient
+
+#if your logs looks like this
+journalctl -eu network
+Bringing up interface ens224:  Error: Connection activation failed: IP configuration could not be reserved (no available address, timeout, etc.)
+
+journalctl -eu NetworkManager
+22:26:11 mx NetworkManager[6430]: <warn>  [1591125971.6108] device (ens224): Activation: failed for connection 'ens224'
+Jun 02 22:26:11 mx NetworkManager[6430]: <info>  [1591125971.6110] device (ens224): state change: failed -> disconnected (reason 'none', sys-iface-state: 'managed')
+Jun 02 22:26:11 mx NetworkManager[6430]: <info>  [1591125971.6120] policy: auto-activating connection 'ens224' (e4014630-448b-5ad3-4992-f4678202147c)
+Jun 02 22:26:11 mx NetworkManager[6430]: <info>  [1591125971.6123] device (ens224): Activation: starting connection 'ens224' (e4014630-448b-5ad3-4992-f4678202147c)
+Jun 02 22:26:11 mx NetworkManager[6430]: <info>  [1591125971.6124] device (ens224): state change: disconnected -> prepare (reason 'none', sys-iface-state: 'managed')
+Jun 02 22:26:11 mx NetworkManager[6430]: <info>  [1591125971.6126] device (ens224): state change: prepare -> config (reason 'none', sys-iface-state: 'managed')
+Jun 02 22:26:11 mx NetworkManager[6430]: <info>  [1591125971.6129] device (ens224): state change: config -> ip-config (reason 'none', sys-iface-state: 'managed')
+Jun 02 22:26:11 mx NetworkManager[6430]: <info>  [1591125971.6132] dhcp4 (ens224): activation: beginning transaction (timeout in 45 seconds)
+Jun 02 22:26:11 mx NetworkManager[6430]: <info>  [1591125971.6161] dhcp4 (ens224): dhclient started with pid 6478
+Jun 02 22:26:11 mx NetworkManager[6430]: <info>  [1591125971.6182] dhcp4 (ens224): client pid 6478 exited with status 0
+Jun 02 22:26:11 mx NetworkManager[6430]: <info>  [1591125971.6182] dhcp4 (ens224): state changed unknown -> terminated
+Jun 02 22:26:11 mx NetworkManager[6430]: <info>  [1591125971.6182] dhcp4 (ens224): canceled DHCP transaction
+Jun 02 22:26:11 mx NetworkManager[6430]: <info>  [1591125971.6182] dhcp4 (ens224): state changed terminated -> done
+Jun 02 22:26:11 mx NetworkManager[6430]: <info>  [1591125971.6184] device (ens224): state change: ip-config -> failed (reason 'ip-config-unavailable', sys-iface-state: 'managed')
+
+# try reinstall dhclient
+yum reinstall dhclient -y
+
+# if error
+dhclient: error while loading shared libraries: /lib64/libomapi.so.0: file too short
+
+# find package and reinstall it
+yum provides /lib64/libomapi.so.0
+
+# in my case
+yum reinstall dhcp-libs-4.2.5-79.el7.centos.x86_64 -y
+
+# if error
+dhclient: error while loading shared libraries: libdns-export.so.1102: cannot open shared object file: No such file or directory
+
+# find lib location
+find / -name libdns-export.so.1102
+
+# in my case
+/usr/lib64/bind9-export/libdns-export.so.1102
+
+# copy all libs in bind9-export dir to /usr/lib64
+cd /usr/lib64/bind9-export/
+cp -a * ..
+
