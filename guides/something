@@ -95,10 +95,3 @@ client=$(ifdata -pa ens192)
 sed -i "s/IP/$(echo "${client%.*}").254/" /etc/sysconfig/something
 
 
-# centos 7 if you faced problem with dhclient
-# dhclient: error while loading shared libraries: libdns-export.so.1102: cannot open shared object file: No such file or directory
-# copy all libs in bind9-export dir to /usr/lib64
-cd /usr/lib64/bind9-export/
-cp -a * ..
-
-
