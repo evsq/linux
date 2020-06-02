@@ -45,3 +45,18 @@ find / -name libdns-export.so.1102
 cd /usr/lib64/bind9-export/
 cp -a * ..
 
+
+# if error
+dhclient: error while loading shared libraries: /lib64/libdns-export.so.1102: file too short
+
+# find package and reinstall it
+yum provides \*/libdns-export.so.1102
+
+# in my case
+yum reinstall bind-export-libs.x86_64 32:9.11.4-16.P2.el7_8.6 -y
+
+# if it doesn't work, then try remove bind-export-libs and again install dhclient
+yum remove bind-export-libs.x86_64 32:9.11.4-16.P2.el7_8.6 -y
+yum install dhclient -y
+
+
