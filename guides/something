@@ -95,3 +95,11 @@ client=$(ifdata -pa ens192)
 sed -i "s/IP/$(echo "${client%.*}").254/" /etc/sysconfig/something
 
 
+# if you can't get any logs
+kubectl logs somepod
+error: You must be logged in to the server (the server has asked for the client to provide credentials ( pods/log 
+
+# check CN in apiserver-kubelet-client.crt
+openssl x509 -in apiserver-kubelet-client.crt -text -noout
+# correct value
+ Subject: CN=kube-apiserver-kubelet-client, O=system:masters
