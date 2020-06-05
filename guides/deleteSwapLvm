@@ -1,0 +1,15 @@
+#Disable swap
+swapoff -a
+
+# vim /etc/fstab
+delete /dev/mapper/centos-swap swap                    swap    defaults        0 0
+
+# delete lvm
+lvremove /dev/mapper/centos-swap
+
+# vim /etc/default/grub 
+# delete rd.lvm.lv=centos/swap 
+GRUB_CMDLINE_LINUX="spectre_v2=retpoline rd.lvm.lv=centos/root rd.lvm.lv=centos/swap rhgb quiet"
+
+# reconfigure grub
+grub2-mkconfig -o /boot/grub2/grub.cfg
