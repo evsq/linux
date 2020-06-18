@@ -7,4 +7,4 @@ certbot --nginx -d somedomain
 # Cronjob for renew certs
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
-0 */12 * * * certbot renew >> /var/log/letsencrypt/renew.log
+0 */12 * * * certbot renew --post-hook "nginx -s reload" >> /var/log/letsencrypt/renew.log
