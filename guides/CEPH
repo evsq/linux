@@ -1,0 +1,110 @@
+# My setup:
+admin-ceph 10.28.0.30
+node1 10.28.0.31
+node2 10.28.0.32
+node3 10.28.0.33
+
+SELinux and firewalld are disabled
+
+/dev/sdb 50 GB disks on each node
+
+### Configure nodes
+
+# Be sure all nodes match their hostname
+# For example for node1 you'll need enter command below
+hostnamectl set-hostname node1
+
+# Create new user on each node and set sudo privileges
+useradd node
+passwd node
+echo "node ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/node
+chmod 0440 /etc/sudoers.d/node
+
+### Configure admin-ceph node
+
+# Install epel
+sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+# Add ceph repo
+cat <<EOF > /etc/yum.repos.d/ceph.repo
+[ceph-noarch]
+name=Ceph noarch packages
+baseurl=https://download.ceph.com/rpm-luminous/el7/noarch
+enabled=1
+gpgcheck=1
+type=rpm-md
+gpgkey=https://download.ceph.com/keys/release.asc
+EOF
+
+# Install ceph-deploy
+sudo yum update -y
+sudo yum install ceph-deploy -y 
+
+# Install ntp
+sudo yum install ntp ntpdate ntp-doc
+
+# Add nodes to hosts file
+cat <<EOF >> /etc/hosts
+10.28.0.31    node1
+10.28.0.32	  node2
+10.28.0.33	  node3
+EOF
+
+
+
+# Note: Execute commands below from NORMAL user
+# Add nodes to ssh config
+cat <<EOF > ~/.ssh/config 
+Host node1
+   Hostname 10.28.0.31
+   User node
+Host node2
+   Hostname 10.28.0.32
+   User node
+Host node3
+   Hostname 10.28.0.33
+   User node
+EOF
+
+# Generate ssh keys
+ssh-keygen
+
+# Copy key on each node
+ssh-copy-id node1
+ssh-copy-id node2
+ssh-copy-id node3
+
+# Create directory for cluster from your normal user
+mkdir ceph-cluster && cd ceph-cluster
+
+# Create new cluster config with 3 mons
+ceph-deploy new node1 node2 node3
+
+# Add public network to ceph.conf
+public network = 10.28.0.0/24
+
+# Install ceph packages
+ceph-deploy install node1 node2 node3
+
+# Deploy initial monitors
+ceph-deploy mon create-initial
+
+# Copy the configuration file and admin key to your admin node and nodes
+ceph-deploy admin node1 node2 node3
+
+# Deploy manager daemons
+ceph-deploy mgr create node1 node2 node3
+
+# Add OSD
+ceph-deploy osd create --data /dev/sdb node1
+ceph-deploy osd create --data /dev/sdb node2
+ceph-deploy osd create --data /dev/sdb node3
+
+# Check cluster's health
+ssh node1 sudo ceph -s
+
+# Check disk space usage
+ssh node1 sudo ceph osd df
+
+# Get more info about each node
+ssh node1 sudo ceph osd tree
