@@ -5,8 +5,8 @@ node2 10.28.0.32
 node3 10.28.0.33
 
 SELinux and firewalld are disabled
-
-/dev/sdb 50 GB disks on each node
+8 CPU 8 GB RAM  on each node
+/dev/sdb 50 GB disk on each node
 
 ### Configure nodes
 
@@ -108,3 +108,6 @@ ssh node1 sudo ceph osd df
 
 # Get more info about each node
 ssh node1 sudo ceph osd tree
+
+# Configure ceph for kubernetes
+https://github.com/evsq/kubernetes/tree/master/CEPH
