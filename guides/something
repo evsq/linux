@@ -103,3 +103,14 @@ error: You must be logged in to the server (the server has asked for the client 
 openssl x509 -in apiserver-kubelet-client.crt -text -noout
 # correct value
  Subject: CN=kube-apiserver-kubelet-client, O=system:masters
+ 
+# psql
+CREATE USER someone WITH PASSWORD '';
+
+ALTER DATABASE someone OWNER TO someone;
+
+GRANT CONNECT ON DATABASE someone TO someone2;
+GRANT USAGE ON SCHEMA public TO someone2;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO someone2;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO someone2;
+ 
