@@ -113,4 +113,8 @@ GRANT CONNECT ON DATABASE someone TO someone2;
 GRANT USAGE ON SCHEMA public TO someone2;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO someone2;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO someone2;
- 
+
+# if you faced problem installing something
+W: GPG error: http://dl.google.com/linux/chrome/deb stable InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 78BD65473CB3BD13
+# install public key with command
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78BD65473CB3BD13
