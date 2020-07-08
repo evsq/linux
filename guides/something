@@ -118,3 +118,13 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO someone2;
 W: GPG error: http://dl.google.com/linux/chrome/deb stable InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 78BD65473CB3BD13
 # install public key with command
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78BD65473CB3BD13
+
+
+# if you faced problem with problem as below
+sudo echo "$USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+-bash: /etc/sudoers: Permission denied
+# workaround
+# In the first case, tee -a will append its standard input to the file and we execute this command as root.
+echo "$USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers
+# In the second case, we run bash as root and ask it to execute a command (-c) and the entire command will be executed as root. Note the tricky "/' business here which will dictate when the $USER variable will be expanded.
+sudo bash -c "echo '$USER ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers"
