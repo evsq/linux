@@ -128,3 +128,10 @@ sudo echo "$USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 echo "$USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers
 # In the second case, we run bash as root and ask it to execute a command (-c) and the entire command will be executed as root. Note the tricky "/' business here which will dictate when the $USER variable will be expanded.
 sudo bash -c "echo '$USER ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers"
+
+
+find . \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/mongo_pass/\$mongo_pass/g'
+
+packages=("procps" "htop" "vim" "strace")
+for i in "${packages[@]}";do apt list $i; done 
+for i in "${packages[@]}";do apt search $i; done
