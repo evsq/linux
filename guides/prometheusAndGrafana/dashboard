@@ -1,0 +1,1 @@
+(time() - kube_pod_created{namespace="something"}) / 86400 # list of pods by running time
