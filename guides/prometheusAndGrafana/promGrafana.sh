@@ -52,6 +52,36 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['kube-state-metrics:9100']
+      
+  - job_name: kubernetes-cadvisor
+    scheme: https
+    kubernetes_sd_configs:
+    - api_server: <URL to you k8s API>
+      role: node
+      tls_config:
+        ca_file: ca.pem
+        cert_file: cert.pem
+        key_file: kay.pem
+    tls_config:
+      ca_file: ca.pem
+      cert_file: cert.pem
+      key_file: kay.pem
+    relabel_configs:
+    - separator: ;
+      regex: __meta_kubernetes_node_label_(.+)
+      replacement: $1
+      action: labelmap
+    - separator: ;
+      regex: (.*)
+      target_label: __address__
+      replacement: <URL to you k8s API>
+      action: replace
+    - source_labels: [__meta_kubernetes_node_name]
+      separator: ;
+      regex: (.+)
+      target_label: __metrics_path__
+      replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+      action: replace      
 EOF
 
 # Create prometheus systemd unit
